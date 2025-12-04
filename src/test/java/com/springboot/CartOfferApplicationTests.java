@@ -34,7 +34,7 @@ public class CartOfferApplicationTests {
 		segments.add("p1");
 		OfferRequest offerRequest = new OfferRequest(1,"FLATX",10,segments);
 		boolean result = addOffer(offerRequest);
-		Assert.assertEquals(result,true); // able to add offer
+		Assert.assertEquals(result,true);
 	}
 
 	@Test
@@ -159,6 +159,80 @@ public class CartOfferApplicationTests {
 		addOffer(offerRequest1);
 		int finalCartValue = applyOfferAndGetCartValue(500, 1, 15);
 		Assert.assertEquals("100% off should make cart value 0", 0, finalCartValue);
+	}
+
+	@Test
+	public void zeroDiscountFlatX() throws Exception {
+		OfferRequest offerRequest1 = new OfferRequest(16, "FLATX", 0, Arrays.asList("p1"));
+		addOffer(offerRequest1);
+		int finalCartValue = applyOfferAndGetCartValue(200, 1, 16);
+		Assert.assertEquals("Rs.0 discount should not change cart value", 200, finalCartValue);
+	}
+
+	@Test
+	public void zeroPercentDiscount() throws Exception {
+		OfferRequest offerRequest1 = new OfferRequest(17, "FLAT%", 0, Arrays.asList("p1"));
+		addOffer(offerRequest1);
+		int finalCartValue = applyOfferAndGetCartValue(200, 1, 17);
+		Assert.assertEquals("0% discount should not change cart value", 200, finalCartValue);
+	}
+
+	@Test
+	public void largeCartValueFlatPercent() throws Exception {
+		OfferRequest offerRequest1 = new OfferRequest(19, "FLAT%", 25, Arrays.asList("p2"));
+		addOffer(offerRequest1);
+		int finalCartValue = applyOfferAndGetCartValue(10000, 2, 19);
+		Assert.assertEquals("Large cart value with 25% off should be 7500", 7500, finalCartValue);
+	}
+
+	@Test
+	public void smallCartValue_SmallDiscount() throws Exception {
+		OfferRequest offerRequest1 = new OfferRequest(20, "FLATX", 5, Arrays.asList("p1"));
+		addOffer(offerRequest1);
+		int finalCartValue = applyOfferAndGetCartValue(50, 1, 20);
+		Assert.assertEquals("Small cart with Rs.5 off should be 45", 45, finalCartValue);
+	}
+
+	@Test
+	public void mixedOffersFlatXAndPercentP1GetsFlatX() throws Exception {
+		OfferRequest offerRequest1 = new OfferRequest(21, "FLATX", 100, Arrays.asList("p1"));
+		addOffer(offerRequest1);
+		OfferRequest offerRequest = new OfferRequest(21, "FLAT%", 20, Arrays.asList("p2"));
+		addOffer(offerRequest);
+		int finalCartValue = applyOfferAndGetCartValue(1000, 1, 21);
+		Assert.assertEquals("P1 user should get FLATX Rs.100 off", 900, finalCartValue);
+	}
+
+	@Test
+	public void mixedOffersFlatXAndPercentP2GetsPercent() throws Exception {
+		OfferRequest offerRequest1 = new OfferRequest(22, "FLATX", 100, Arrays.asList("p1"));
+		addOffer(offerRequest1);
+		OfferRequest offerRequest = new OfferRequest(22, "FLAT%", 20, Arrays.asList("p2"));
+		addOffer(offerRequest);
+		int finalCartValue = applyOfferAndGetCartValue(1000, 2, 22);
+		Assert.assertEquals("P2 user should get 20% off = Rs.200 discount", 800, finalCartValue);
+	}
+
+	@Test
+	public void offerForAllSegments() throws Exception {
+		OfferRequest offerRequest1 = new OfferRequest(23, "FLATX", 20, Arrays.asList("p1", "p2", "p3"));
+		addOffer(offerRequest1);
+		int cartP1 = applyOfferAndGetCartValue(200, 1, 23);
+		int cartP2 = applyOfferAndGetCartValue(200, 2, 23);
+		int cartP3 = applyOfferAndGetCartValue(200, 3, 23);
+		Assert.assertEquals("P1 user should get discount", 180, cartP1);
+		Assert.assertEquals("P2 user should get discount", 180, cartP2);
+		Assert.assertEquals("P3 user should get discount", 180, cartP3);
+	}
+
+	@Test
+	public void firstMatchingOfferWins() throws Exception {
+		OfferRequest offerRequest1 = new OfferRequest(28, "FLATX", 50, Arrays.asList("p1"));
+		addOffer(offerRequest1);
+		OfferRequest offerRequest = new OfferRequest(28, "FLATX", 100, Arrays.asList("p1"));
+		addOffer(offerRequest);
+		int finalCartValue = applyOfferAndGetCartValue(500, 1, 28);
+		Assert.assertEquals("First matching offer should apply", 450, finalCartValue);
 	}
 
 	public boolean addOffer(OfferRequest offerRequest) throws Exception {
