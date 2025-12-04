@@ -25,7 +25,6 @@ import java.util.List;
 public class CartOfferApplicationTests {
 	private ObjectMapper mapper = new ObjectMapper();
 	private static final String BASE_URL = "http://localhost:9001";
-	private static final String OFFER_URL = BASE_URL + "/api/v1/offer";
 	private static final String APPLY_OFFER_URL = BASE_URL + "/api/v1/cart/apply_offer";
 
 	@Test
